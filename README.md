@@ -18,4 +18,4 @@ How to use it?
 
 7. When it's finished, you will have your coordinates.kml file in the Instructions folder. If you had more than 2000 contributions, you would also find coordinates_chunk_i.kml files.
 
-8. You can view your edits by opening the coordinates.kml file with Google Earth Pro or importing them in Google My Maps. Google My Maps has a limit of 2000 points per file, so you will have to individually import each chunk into your map.
+8. You can view your edits by opening the coordinates.kml file with Google Earth Pro or importing them in Google My Maps. Google My Maps has a limit of 2000 points per file, so you will have to individually import each chunk into your map. Another limit is that each layer can only have 10000 points, meaning you would have to create multiple layers and upload 5 chunks in each layer.
