@@ -12,7 +12,7 @@ How to use it?
 
 4. Download your data and unzip the folder.
 
-5. Download this Python script and run it. You need Python on your computer to be able to run it. Another option is also to download the executable that I created for people who don't want to deal with Python scripts. You can find the executable **[here](https://github.com/ahlinj/google-maps-edits-parser/releases/tag/v1.1)**.
+5. Download this Python script and run it. You need Python on your computer to be able to run it. Another option is also to download the executable that I created for people who don't want to deal with Python scripts. You can find the executable **[here](https://github.com/ahlinj/google-maps-edits-parser/releases/tag/v1.2)**.
 
 6. Once you run the script or the executable select the Instructions folder and wait for the program to finish.
 
