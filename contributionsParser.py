@@ -45,18 +45,22 @@ def create_kml(coordinates, kml_file_path):
     tree.write(kml_file_path, encoding="utf-8", xml_declaration=True)
     
     
-def split_kml_file(coordinates, input_kml_path, total_coordinates, output_folder, max_coordinates=2000):
-    # Calculate the number of chunks needed
-    num_chunks = (total_coordinates + max_coordinates - 1) // max_coordinates
+def split_kml_file(coordinates, output_folder, max_coordinates=2000):
+    chunk = set()
+    file_index = 1
 
-    output_files = []
+    for coord in coordinates:
+        chunk.add(coord)
+        if len(chunk) == max_coordinates:
+            output_filename = os.path.join(output_folder, f"coordinates_chunk_{file_index}.kml")
+            create_kml(chunk, output_filename)
+            file_index += 1
+            chunk = set()
 
-    for i in range(num_chunks):
-        chunk_coordinates = coordinates[i * max_coordinates: (i + 1) * max_coordinates]
-        output_filename = os.path.join(output_folder, f"coordinates_chunk_{i + 1}.kml")
-        create_kml(chunk_coordinates, output_filename)
-        output_files.append(output_filename)
-    return output_files
+    # Write remaining coordinates
+    if chunk:
+        output_filename = os.path.join(output_folder, f"coordinates_chunk_{file_index}.kml")
+        create_kml(chunk, output_filename)
 
 def main():
     root = tk.Tk()
@@ -69,15 +73,15 @@ def main():
 
     print(f"Processing JSON files in: {folder_selected}")
 
-    coordinates = []
+    coordinates = set()
 
     # Loop through JSON files in the selected directory
     for filename in os.listdir(folder_selected):
         if filename.endswith(".json"):
             file_path = os.path.join(folder_selected, filename)
             result = extract_coordinates(file_path)
-            if result:
-                coordinates.append(result)
+            if result not in coordinates:
+                coordinates.add(result)
                 
     print(f"Total coordinates extracted: {len(coordinates)}")
 
@@ -86,7 +90,7 @@ def main():
         create_kml(coordinates, kml_file_path)
         
     if len(coordinates) > 2000:
-        split_kml_file(coordinates, kml_file_path, len(coordinates), folder_selected)
+        split_kml_file(coordinates, folder_selected)
     
     print("Processing complete!")
 
