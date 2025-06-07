@@ -80,7 +80,7 @@ def main():
         if filename.endswith(".json"):
             file_path = os.path.join(folder_selected, filename)
             result = extract_coordinates(file_path)
-            if result not in coordinates:
+            if result is not None and result not in coordinates:
                 coordinates.add(result)
                 
     print(f"Total coordinates extracted: {len(coordinates)}")
