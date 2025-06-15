@@ -3,11 +3,19 @@ import json
 import tkinter as tk
 from tkinter import filedialog
 from xml.etree.ElementTree import Element, SubElement, ElementTree
+import re
+import requests
 
 def extract_coordinates(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
+            raw = file.read()
+            newline_match = re.search(r'text.*\n',raw)
+            if newline_match:
+                original = newline_match.group(0)
+                fixed = original.replace('\n', ' ')
+                raw = raw.replace(original, fixed)
+            data = json.loads(raw)
 
         if "instructions" in data:
             for instruction in data["instructions"]:
@@ -18,6 +26,27 @@ def extract_coordinates(file_path):
                         lat = first_vertex["latE7"] / 1e7
                         lng = first_vertex["lngE7"] / 1e7
                         return lat, lng
+                    
+                if "userComments" in instruction:
+                    for comment in instruction["userComments"]:
+                        if "text" in comment:
+                            coord_pattern = r'-?[0-9]+\.[0-9]+, -?[0-9]+\.[0-9]+'
+                            text = comment["text"]
+                            coord_match = re.search(coord_pattern, text)
+                            if coord_match:
+                                coordinates = coord_match.group(0)
+                                lat = coordinates.split(",")[0]
+                                lng = coordinates.split(",")[1].strip()
+                                return lat, lng
+                            link_pattern = r'https:\/\/maps.app.goo.gl\/[^\s]+'
+                            link_match = re.search(link_pattern, text)
+                            if link_match:
+                                response = requests.get(link_match.group(0), allow_redirects=True)
+                                coord_from_link = re.search(coord_pattern, response.url)
+                                if coord_from_link:
+                                    lat = coord_from_link.group(0).split(",")[0]
+                                    lng = coord_from_link.group(0).split(",")[0].strip()
+                                    return lat, lng
                 
                 if "location" in instruction and "points" in instruction["location"]:
                     first_point = instruction["location"]["points"][0]
