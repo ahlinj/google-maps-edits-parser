@@ -10,22 +10,31 @@ def extract_coordinates(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             raw = file.read()
-            newline_match = re.search(r'text.*\n',raw)
-            if newline_match:
-                original = newline_match.group(0)
-                fixed = original.replace('\n', ' ')
-                raw = raw.replace(original, fixed)
-            data = json.loads(raw)
+            fixed_raw = fix_multiline_text_fields(raw)
+            data = json.loads(fixed_raw)
 
         if "instructions" in data:
             for instruction in data["instructions"]:
-                if "roadNetworkUpdate" in instruction and "before" in instruction["roadNetworkUpdate"]:
-                    segments = instruction["roadNetworkUpdate"]["before"].get("segments", [])
-                    if segments and "polyline" in segments[0] and "vertices" in segments[0]["polyline"]:
-                        first_vertex = segments[0]["polyline"]["vertices"][0]
-                        lat = first_vertex["latE7"] / 1e7
-                        lng = first_vertex["lngE7"] / 1e7
-                        return lat, lng
+                if "roadNetworkUpdate" in instruction:
+                    rnu = instruction["roadNetworkUpdate"]
+                    
+                    before_segments = rnu.get("before", {}).get("segments", [])
+                    after_segments = rnu.get("after", {}).get("segments", [])
+                    
+                    def get_first_vertex_coords(segments):
+                        if segments and "polyline" in segments[0] and "vertices" in segments[0]["polyline"]:
+                            first_vertex = segments[0]["polyline"]["vertices"][0]
+                            lat = first_vertex["latE7"] / 1e7
+                            lng = first_vertex["lngE7"] / 1e7
+                            return lat, lng
+                        return None
+                    
+                    coords = get_first_vertex_coords(before_segments)
+                    if coords is None:
+                        coords = get_first_vertex_coords(after_segments)
+                    
+                    if coords is not None:
+                        return coords
                     
                 if "userComments" in instruction:
                     for comment in instruction["userComments"]:
@@ -59,6 +68,17 @@ def extract_coordinates(file_path):
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
         return None
+    
+def fix_multiline_text_fields(raw: str) -> str:
+    pattern = r'"text"\s*:\s*"((?:[^"\\]|\\.|\\\n)*?)"'
+
+    def replacer(match):
+        original_text = match.group(1)
+        fixed_text = original_text.replace('\n', ' ').replace('\r', '').strip()
+        return f'"text": "{fixed_text}"'
+    
+    return re.sub(pattern, replacer, raw, flags=re.DOTALL)
+
 
 def create_kml(coordinates, kml_file_path):
     kml = Element('kml', xmlns="http://www.opengis.net/kml/2.2")
