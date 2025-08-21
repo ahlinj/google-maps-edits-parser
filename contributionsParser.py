@@ -5,6 +5,8 @@ from tkinter import filedialog
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 import re
 import requests
+import reverse_geocoder as rg
+from collections import Counter
 
 def extract_coordinates(file_path):
     try:
@@ -111,6 +113,21 @@ def split_kml_file(coordinates, output_folder, max_coordinates=2000):
         output_filename = os.path.join(output_folder, f"coordinates_chunk_{file_index}.kml")
         create_kml(chunk, output_filename)
 
+def extract_countries(coordinates, folder_selected):
+    coordinates_list = list(coordinates)
+    results = rg.search(coordinates_list)
+    
+    country_codes = [result['cc'] for result in results]
+    country_counts = Counter(country_codes)
+    
+    output_filename = os.path.join(folder_selected,"stats.txt")
+    try:
+        with open(output_filename, 'w') as f:
+            for country, count in country_counts.most_common():
+                f.write(f"{country}: {count}\n")
+    except Exception as e:
+        print(f"An error occurred while writing to the file: {e}")
+
 def main():
     root = tk.Tk()
     root.withdraw()
@@ -134,6 +151,8 @@ def main():
                 
     print(f"Total coordinates extracted: {len(coordinates)}")
 
+    extract_countries(coordinates, folder_selected)
+    
     if coordinates:
         kml_file_path = os.path.join(folder_selected, "coordinates.kml")
         create_kml(coordinates, kml_file_path)
