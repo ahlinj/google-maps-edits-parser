@@ -118,13 +118,35 @@ def extract_countries(coordinates, folder_selected):
     results = rg.search(coordinates_list)
     
     country_codes = [result['cc'] for result in results]
+    admin1 = [result['admin1'] for result in results]
+    admin2 = [result['admin2'] for result in results]
+    
     country_counts = Counter(country_codes)
+    admin1_count = Counter(admin1)
+    admin2_count = Counter(admin2)
     
     output_filename = os.path.join(folder_selected,"stats.txt")
     try:
         with open(output_filename, 'w') as f:
+            f.write("=========================\n")
+            f.write("  Country Statistics\n")
+            f.write("=========================\n")
             for country, count in country_counts.most_common():
                 f.write(f"{country}: {count}\n")
+                
+            f.write("=========================\n")
+            f.write("  Admin1 Statistics\n")
+            f.write("=========================\n")
+            for admin1, count in admin1_count.most_common():
+                f.write(f"{admin1}: {count}\n")
+                
+            f.write("=========================\n")
+            f.write("  Admin2 Statistics\n")
+            f.write("=========================\n")
+            for admin2, count in admin2_count.most_common():
+                f.write(f"{admin2}: {count}\n")
+                
+                
     except Exception as e:
         print(f"An error occurred while writing to the file: {e}")
 
