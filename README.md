@@ -23,8 +23,8 @@ This Python script converts your contributions (edits) stored in JSONs to a KML 
 ## Statistics
 
 Disclaimers: 
-    1. This feature is only supported using the python script directly and is not packaged in the executable.
-    2. You will need to install reverse_geocoder library
-    3. The statistics may not be 100% accurate
+1. This feature is only supported using the python script directly and is not packaged in the executable.
+2. You will need to install reverse_geocoder library
+3. The statistics may not be 100% accurate
 
 A stats.txt file will be generated, showing number of edits in particular country, 1st and 2nd administrative division.
